@@ -97,6 +97,7 @@ public:
 	                    // si dValidacion=0.2, un 20% de los datos de entrenamiento,
 	                    // se usan para valición; si dValidacion=0, no hay validación)
 	double dDecremento; // Factor de decremento por capas para eta
+	bool bOnline;		// Aprendizaje online u offline
 
 	// CONSTRUCTOR: Dar valor por defecto a todos los parámetros
 	PerceptronMulticapa();

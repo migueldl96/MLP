@@ -19,6 +19,11 @@
 #include "imc/util.h"
 #include "imc/stats.hpp"
 
+#define ENTRIOPIA_CRUZADA 1
+#define MSE 0
+#define OFFLINE true
+#define ONLINE false
+
 
 using namespace imc;
 using namespace std;
@@ -32,11 +37,14 @@ int main(int argc, char **argv) {
 	double eta = 0.1, mu = 0.9, validation = 0.0;
 	int decremento = 1;
     double meanIterations = 0;
+    bool trainMode = OFFLINE;
+    int funcionError = MSE;
+    bool softmaxOut = false;
 
 	// Procesar los argumentos de la línea de comandos
 	opterr=0;
 	char c;
-    while ((c = getopt (argc, argv, "t:T:i:l:h:e:m:v:d:")) != -1)
+    while ((c = getopt (argc, argv, "t:T:i:l:h:e:m:v:d:ofs")) != -1)
     {
         switch (c)
         {
@@ -101,6 +109,19 @@ int main(int argc, char **argv) {
         	decremento = atoi(optarg);
         break;
 
+        case 'o': // Online
+            trainMode = ONLINE;
+        break;
+
+        case 'f': // Funcion de error = Entriopía cruzada
+            funcionError = ENTRIOPIA_CRUZADA;
+        break;
+
+        case 's': // Softmac
+            softmaxOut = true;
+        break;
+
+
         // Algún error?
         case '?':
             if (optopt == 't')
@@ -122,6 +143,8 @@ int main(int argc, char **argv) {
 	mlp.dMu = mu;
 	mlp.dValidacion = validation;
 	mlp.dDecremento = decremento;
+    mlp.bOnline = trainMode;
+    
 
 	// Lectura de datos
 	Datos * pDatosTrain, * pDatosTest;

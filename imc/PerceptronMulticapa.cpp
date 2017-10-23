@@ -27,6 +27,7 @@ PerceptronMulticapa::PerceptronMulticapa(){
  	dMu = 0.9;
  	dValidacion = 0.0;
  	dDecremento = 1;
+ 	bOnline = trainMode;
 }
 
 // ------------------------------
@@ -284,7 +285,6 @@ void PerceptronMulticapa::actualizarDeltasW() {
 // Simular la red: propagar las entradas hacia delante, retropropagar el error y ajustar los pesos
 // entrada es el vector de entradas del patrón y objetivo es el vector de salidas deseadas del patrón
 void PerceptronMulticapa::simularRedOnline(double* entrada, double* objetivo) {
-	actualizarDeltasW();
 
 	alimentarEntradas(entrada);
 
@@ -293,8 +293,6 @@ void PerceptronMulticapa::simularRedOnline(double* entrada, double* objetivo) {
 	retropropagarError(objetivo);
 
 	acumularCambio();
-
-	ajustarPesos();
 }
 
 // ------------------------------
@@ -344,10 +342,11 @@ Datos* PerceptronMulticapa::leerDatos(const char *archivo) {
 void PerceptronMulticapa::entrenarOnline(Datos* pDatosTrain) {
 	int i;
 
+	actualizarDeltasW();
 	for(i=0; i<pDatosTrain->nNumPatrones; i++){
 		simularRedOnline(pDatosTrain->entradas[i], pDatosTrain->salidas[i]);
 	}
-
+	ajustarPesos();
 
 
 }
