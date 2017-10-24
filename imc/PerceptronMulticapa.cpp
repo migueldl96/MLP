@@ -428,8 +428,40 @@ double PerceptronMulticapa::test(Datos* pDatosTest, int funcionError) {
 }
 
 // Probar la red con un conjunto de datos y devolver el CCR
-double testClassification(Datos* pDatosTest) {
-	return 0.0;
+double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
+	double ccr = 0.0;
+	int i, j;
+	double maxYDeseado, maxYObtenido;
+	int posDeseado, posObtenido;
+
+	for(i=0;i<pDatosTest->nNumPatrones;i++) {
+		maxYDeseado = 0.0;
+		maxYObtenido = 0.0;
+		posDeseado = 0;
+		posObtenido = 0;
+
+		alimentarEntradas(pDatosTest->entradas[i]);
+		propagarEntradas();
+
+
+		for(j=0;j<pDatosTest->nNumSalidas;j++) {
+			if(pDatosTest->salidas[i][j] > maxYDeseado) {
+				maxYDeseado = pDatosTest->salidas[i][j];
+				posDeseado = j;
+			}
+
+			if(pCapas[nNumCapas-1].pNeuronas[j].x > maxYObtenido) {
+				maxYObtenido = pCapas[nNumCapas-1].pNeuronas[j].x;
+				posObtenido = j;
+			}
+		}
+		if(posDeseado == posObtenido)
+			ccr++;
+		
+	}
+
+	ccr = (ccr/pDatosTest->nNumPatrones) * 100;
+	return ccr;
 }
 
 // ------------------------------
@@ -558,6 +590,8 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 	testError = test(pDatosTest, funcionError);
 	*errorTest=testError;
 	*errorTrain=minTrainError;
+	*ccrTest = testClassification(pDatosTest);
+	*ccrTrain = testClassification(pDatosTrain);
 
 	if(usingValidation) delete pDatosValidacion;
 

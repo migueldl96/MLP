@@ -44,6 +44,20 @@ static bool contiene(int * vector, int ele, int tam) {
 
         return false;
 }
+
+static int indiceMaxElemento(double * vector, int tam) {
+        int i, indice=0;
+        double max = vector[0];
+
+        for(i=1;i<tam;i++) {
+                if(vector[i]>max) {
+                        max = vector[i];
+                        indice = i;
+                }
+        }
+
+        return indice;
+}
 }
 
 

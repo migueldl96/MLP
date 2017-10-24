@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
     	cout << "SEMILLA " << semillas[i] << endl;
     	cout << "**********" << endl;
 		srand(semillas[i]);
-		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,iteraciones,&(erroresTrain[i]),&(erroresTest[i]), fichTrain, &meanIterations, funcionError, ccrsTrain, ccrsTest);
-		cout << "Finalizamos => Error de test final: " << erroresTest[i] << endl;
+		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,iteraciones,&(erroresTrain[i]),&(erroresTest[i]), fichTrain, &meanIterations, funcionError, &(ccrsTrain[i]), &(ccrsTest[i]));
+		cout << "Finalizamos => CCR de test final: " << ccrsTest[i] << "%" << endl;
 	}
     long double end = clock();
     long double tiempo = (end-begin)/(double)CLOCKS_PER_SEC;
@@ -186,6 +186,8 @@ int main(int argc, char **argv) {
 
     double mediaErrorTest = 0, desviacionTipicaErrorTest = 0;
     double mediaErrorTrain = 0, desviacionTipicaErrorTrain = 0;
+    double mediaCCRTest = 0, desviacionTipicaCCRTest = 0;
+    double mediaCCRTrain = 0, desviacionTipicaCCRTrain = 0;
     
     // Calcular medias y desviaciones típicas de entrenamiento y test
     mediaErrorTrain = mean(erroresTrain, 5);
@@ -193,10 +195,17 @@ int main(int argc, char **argv) {
     desviacionTipicaErrorTrain = sd(erroresTrain, 5);
     desviacionTipicaErrorTest  = sd(erroresTest, 5);
 
+    mediaCCRTrain = mean(ccrsTrain, 5);
+    mediaCCRTest  = mean(ccrsTest, 5);
+    desviacionTipicaCCRTrain = sd(ccrsTrain, 5);
+    desviacionTipicaCCRTest  = sd(ccrsTest, 5);
+
     cout << "INFORME FINAL" << endl;
     cout << "*************" << endl;
     cout << "Error de entrenamiento (Media +- DT): " << mediaErrorTrain << " +- " << desviacionTipicaErrorTrain << endl;
     cout << "Error de test (Media +- DT):          " << mediaErrorTest << " +- " << desviacionTipicaErrorTest << endl;
+    cout << "CCR de entrenamiento (Media +- DT):   " << mediaCCRTrain << "% +- " << desviacionTipicaCCRTrain << "% " << endl;
+    cout << "CCR de test (Media +- DT):            " << mediaCCRTest << "% +- " << desviacionTipicaCCRTest << "% " << endl;
     cout << "Número de iteraciones medio:          " << meanIterations << endl;
     cout << "Tiempo necesario:                     " << tiempo << "s" << endl;
     return EXIT_SUCCESS;
