@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
     	cout << "**********" << endl;
 		srand(semillas[i]);
 		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,iteraciones,&(erroresTrain[i]),&(erroresTest[i]), fichTrain, &meanIterations, funcionError, &(ccrsTrain[i]), &(ccrsTest[i]));
-		cout << "Finalizamos => CCR de test final: " << ccrsTest[i] << "%" << endl;
+		cout << "Finalizamos => CCR de test final: " << ccrsTest[i] << endl;
 	}
     long double end = clock();
     long double tiempo = (end-begin)/(double)CLOCKS_PER_SEC;
@@ -204,8 +204,8 @@ int main(int argc, char **argv) {
     cout << "*************" << endl;
     cout << "Error de entrenamiento (Media +- DT): " << mediaErrorTrain << " +- " << desviacionTipicaErrorTrain << endl;
     cout << "Error de test (Media +- DT):          " << mediaErrorTest << " +- " << desviacionTipicaErrorTest << endl;
-    cout << "CCR de entrenamiento (Media +- DT):   " << mediaCCRTrain << "% +- " << desviacionTipicaCCRTrain << "% " << endl;
-    cout << "CCR de test (Media +- DT):            " << mediaCCRTest << "% +- " << desviacionTipicaCCRTest << "% " << endl;
+    cout << "CCR de entrenamiento (Media +- DT):   " << mediaCCRTrain << " +- " << desviacionTipicaCCRTrain << " " << endl;
+    cout << "CCR de test (Media +- DT):            " << mediaCCRTest << " +- " << desviacionTipicaCCRTest << " " << endl;
     cout << "Número de iteraciones medio:          " << meanIterations << endl;
     cout << "Tiempo necesario:                     " << tiempo << "s" << endl;
     return EXIT_SUCCESS;

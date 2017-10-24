@@ -460,7 +460,7 @@ double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 		
 	}
 
-	ccr = (ccr/pDatosTest->nNumPatrones) * 100;
+	ccr = (ccr/pDatosTest->nNumPatrones);
 	return ccr;
 }
 
