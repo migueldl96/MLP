@@ -38,6 +38,7 @@ class PerceptronMulticapa {
 private:
 	int    nNumCapas;     /* Número de capas total en la red */
 	Capa* pCapas;         /* Vector con cada una de las capas */
+	int nNumPatronesTrain; /* Para la versión offline */
 
 	// Liberar memoria para las estructuras de datos
 	void liberarMemoria();
@@ -84,9 +85,15 @@ private:
 	// Actualizar los deltasW, los actuales a 0 y los anteriores=actuales
 	void actualizarDeltasW();
 
-	// Simular la red: propagar las entradas hacia delante, retropropagar el error y ajustar los pesos
-	// entrada es el vector de entradas del patrón y objetivo es el vector de salidas deseadas del patrón
-	void simularRedOnline(double* entrada, double* objetivo);
+	// Simular la red: propragar las entradas hacia delante, computar el error, retropropagar el error y ajustar los pesos
+	// entrada es el vector de entradas del patrón, objetivo es el vector de salidas deseadas del patrón.
+	// El paso de ajustar pesos solo deberá hacerse si el algoritmo es on-line
+	// Si no lo es, el ajuste de pesos hay que hacerlo en la función "entrenar"
+	// funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
+	void simularRed(double* entrada, double* objetivo, int funcionError);
+
+	// Entrenar la red para un determinado fichero de datos (pasar una vez por todos los patrones)
+	void entrenar(Datos* pDatosTrain, int funcionError);
 
 
 public:
@@ -114,15 +121,15 @@ public:
 	Datos* leerDatos(const char *archivo);
 
 	// Probar la red con un conjunto de datos y devolver el error MSE (media de diferencia al cuadrado) cometido
-	double test(Datos* pDatosTest);
+	double test(Datos* pDatosTest, int funcionError);
 
-	// Entrenar la red on-line para un determinado fichero de datos
-	void entrenarOnline(Datos* pDatosTrain);
+	// Probar la red con un conjunto de datos y devolver el CCR
+	double testClassification(Datos* pDatosTest);
 
 	// Ejecutar el algoritmo de entrenamiento durante un número de iteraciones, utilizando pDatosTrain
      // Una vez terminado, probar como funciona la red en pDatosTest
      // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
-	void ejecutarAlgoritmoOnline(const Datos * originalPDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, char * fichTrain, double * meanIterations);
+	void ejecutarAlgoritmoOnline(const Datos * originalPDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, char * fichTrain, double * meanIterations, int funcionError, double *ccrTrain, double *ccrTest);
 
 };
 

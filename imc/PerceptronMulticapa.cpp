@@ -27,7 +27,7 @@ PerceptronMulticapa::PerceptronMulticapa(){
  	dMu = 0.9;
  	dValidacion = 0.0;
  	dDecremento = 1;
- 	bOnline = trainMode;
+ 	bOnline = true;
 }
 
 // ------------------------------
@@ -244,7 +244,10 @@ void PerceptronMulticapa::ajustarPesos() {
 			for(k=0; k<pCapas[i-1].nNumNeuronas+1;k++) {
 				deltaW = pCapas[i].pNeuronas[j].deltaW[k];
 				deltaWAnterior = pCapas[i].pNeuronas[j].ultimoDeltaW[k];
-				pCapas[i].pNeuronas[j].w[k] = pCapas[i].pNeuronas[j].w[k] - (eta * deltaW) - dMu * (eta * deltaWAnterior);
+				if(bOnline)
+					pCapas[i].pNeuronas[j].w[k] = pCapas[i].pNeuronas[j].w[k] - (eta * deltaW) - dMu * (eta * deltaWAnterior);
+				else
+					pCapas[i].pNeuronas[j].w[k] = pCapas[i].pNeuronas[j].w[k] - (eta * deltaW)/nNumPatronesTrain - (dMu * eta * deltaWAnterior)/nNumPatronesTrain;
 			}
 		}
 	}
@@ -282,9 +285,14 @@ void PerceptronMulticapa::actualizarDeltasW() {
 }
 
 // ------------------------------
-// Simular la red: propagar las entradas hacia delante, retropropagar el error y ajustar los pesos
-// entrada es el vector de entradas del patrón y objetivo es el vector de salidas deseadas del patrón
-void PerceptronMulticapa::simularRedOnline(double* entrada, double* objetivo) {
+// Simular la red: propragar las entradas hacia delante, computar el error, retropropagar el error y ajustar los pesos
+// entrada es el vector de entradas del patrón, objetivo es el vector de salidas deseadas del patrón.
+// El paso de ajustar pesos solo deberá hacerse si el algoritmo es on-line
+// Si no lo es, el ajuste de pesos hay que hacerlo en la función "entrenar"
+// funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
+void PerceptronMulticapa::simularRed(double* entrada, double* objetivo, int funcionError) {
+
+	if(bOnline) actualizarDeltasW();
 
 	alimentarEntradas(entrada);
 
@@ -293,6 +301,23 @@ void PerceptronMulticapa::simularRedOnline(double* entrada, double* objetivo) {
 	retropropagarError(objetivo);
 
 	acumularCambio();
+
+	if(bOnline) ajustarPesos();
+}
+
+
+// ------------------------------
+// Entrenar la red para un determinado fichero de datos (pasar una vez por todos los patrones)
+void PerceptronMulticapa::entrenar(Datos* pDatosTrain, int funcionError) {
+	int i;
+
+	if(!bOnline) actualizarDeltasW();
+
+	for(i=0;i<pDatosTrain->nNumPatrones;i++) {
+		simularRed(pDatosTrain->entradas[i], pDatosTrain->salidas[i], funcionError);
+	}
+
+	if(!bOnline) ajustarPesos();
 }
 
 // ------------------------------
@@ -337,19 +362,6 @@ Datos* PerceptronMulticapa::leerDatos(const char *archivo) {
 	return dataSet;
 }
 
-// ------------------------------
-// Entrenar la red on-line para un determinado fichero de datos
-void PerceptronMulticapa::entrenarOnline(Datos* pDatosTrain) {
-	int i;
-
-	actualizarDeltasW();
-	for(i=0; i<pDatosTrain->nNumPatrones; i++){
-		simularRedOnline(pDatosTrain->entradas[i], pDatosTrain->salidas[i]);
-	}
-	ajustarPesos();
-
-
-}
 // Copiar conjunto de datos : ERROR DE MEMORIA
 Datos * PerceptronMulticapa::creaCopia(const Datos * source) {
 	int i;
@@ -403,7 +415,7 @@ void PerceptronMulticapa::splitDataSets(const Datos * originalPDatosTrain, Datos
 
 // ------------------------------
 // Probar la red con un conjunto de datos y devolver el error MSE cometido
-double PerceptronMulticapa::test(Datos* pDatosTest) {
+double PerceptronMulticapa::test(Datos* pDatosTest, int funcionError) {
 	int i;
 	double mse = 0.0;
 	for(i=0;i<pDatosTest->nNumPatrones;i++) {
@@ -415,14 +427,20 @@ double PerceptronMulticapa::test(Datos* pDatosTest) {
 	return mse;
 }
 
+// Probar la red con un conjunto de datos y devolver el CCR
+double testClassification(Datos* pDatosTest) {
+	return 0.0;
+}
+
 // ------------------------------
 // Ejecutar el algoritmo de entrenamiento durante un número de iteraciones, utilizando pDatosTrain
 // Una vez terminado, probar como funciona la red en pDatosTest
 // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
-void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, char * fichTrain, double * meanIterations)
+void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, char * fichTrain, double * meanIterations, int funcionError, double *ccrTrain, double *ccrTest)
 {
 	int countTrain = 0;
 	bool keepIterating = true;
+
 	// Inicialización de pesos
 	pesosAleatorios();
 
@@ -435,6 +453,8 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 	bool usingValidation = false;
 	
 	Datos * pDatosValidacion;
+
+	nNumPatronesTrain = originalPDatosTrain->nNumPatrones;
 
 	// Nuevo conjunto de entrenamiento
 	//Datos * pDatosTrain = creaCopia(originalPDatosTrain);
@@ -467,9 +487,9 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 	// Aprendizaje del algoritmo
 	do {
 
-		entrenarOnline(pDatosTrain);
-		double trainError = test(pDatosTrain);
-		if(usingValidation) valError = test(pDatosValidacion);
+		entrenar(pDatosTrain, funcionError);
+		double trainError = test(pDatosTrain, funcionError);
+		if(usingValidation) valError = test(pDatosValidacion, funcionError);
 
 		// Condición: Error de entrenamiento no varia en 50 iteraciones
 		if(countTrain==0 || fabs(trainError - minTrainError) > 0.00001) {
@@ -535,7 +555,7 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 
 	}
 
-	testError = test(pDatosTest);
+	testError = test(pDatosTest, funcionError);
 	*errorTest=testError;
 	*errorTrain=minTrainError;
 

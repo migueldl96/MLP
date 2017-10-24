@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
             funcionError = ENTRIOPIA_CRUZADA;
         break;
 
-        case 's': // Softmac
+        case 's': // Softmax
             softmaxOut = true;
         break;
 
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 	mlp.dValidacion = validation;
 	mlp.dDecremento = decremento;
     mlp.bOnline = trainMode;
-    
+
 
 	// Lectura de datos
 	Datos * pDatosTrain, * pDatosTest;
@@ -167,13 +167,16 @@ int main(int argc, char **argv) {
     int semillas[] = {10,20,30,40,50};
     double *erroresTest = new double[5];
     double *erroresTrain = new double[5];
+    double *ccrsTest = new double[5];
+    double *ccrsTrain = new double[5];
+
     long double begin = clock();
     for(int i=0; i<5; i++){
     	cout << "**********" << endl;
     	cout << "SEMILLA " << semillas[i] << endl;
     	cout << "**********" << endl;
 		srand(semillas[i]);
-		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,iteraciones,&(erroresTrain[i]),&(erroresTest[i]), fichTrain, &meanIterations);
+		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,iteraciones,&(erroresTrain[i]),&(erroresTest[i]), fichTrain, &meanIterations, funcionError, ccrsTrain, ccrsTest);
 		cout << "Finalizamos => Error de test final: " << erroresTest[i] << endl;
 	}
     long double end = clock();
