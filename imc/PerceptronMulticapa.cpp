@@ -158,8 +158,9 @@ void PerceptronMulticapa::propagarEntradas() {
 	double net = 0.0;
 
 	// Sumatorio de salidas
-	// Bucle para cada capa
-	for(i=1; i<nNumCapas; i++) {
+
+	// Propagamos hasta la última capa
+	for(i=1; i<nNumCapas-1; i++) {
 		// Bucle para cada neurona de la capa actual
 		for(j=0;j<pCapas[i].nNumNeuronas; j++) {
 			net = pCapas[i].pNeuronas[j].w[0];
@@ -173,11 +174,50 @@ void PerceptronMulticapa::propagarEntradas() {
 		}
 	}
 
+	// Última capa, sigmoide o softmax?
+	if(softmaxOut) {	// Softmax
+		double netOuts[pCapas[nNumCapas-1].nNumNeuronas];
+		double netsSum = 0.0;
+
+		// Calculamos net de cada neurona de salida y el sumatorio total
+		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
+			net = 0;
+
+			for(j=0;j<pCapas[nNumCapas-2].nNumNeuronas;j++) {
+				net += pCapas[nNumCapas-2].pNeuronas[j].x * pCapas[nNumCapas-1].pNeuronas[i].w[j+1];
+			}
+
+			net += pCapas[nNumCapas-1].pNeuronas[i].w[0];
+			netOuts[i] = exp(net);
+			netsSum += exp(net);
+		}
+
+		// Aplicamos softmax
+		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
+			pCapas[nNumCapas-1].pNeuronas[i].x = netOuts[i]/netsSum;
+		}
+
+	}
+	else {				// Sigmoide
+		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
+			net = 0;
+
+			for(j=0;j<pCapas[nNumCapas-2].nNumNeuronas;j++) {
+				net += pCapas[nNumCapas-2].pNeuronas[j].x * pCapas[nNumCapas-1].pNeuronas[i].w[j+1];
+			}
+
+			net += pCapas[nNumCapas-1].pNeuronas[i].w[0];
+
+			pCapas[nNumCapas-1].pNeuronas[i].x = 1/(1+exp(-net));
+		}
+	}
+
+
 }
 
 // ------------------------------
 // Calcular el error de salida (MSE) del out de la capa de salida con respecto a un vector objetivo y devolverlo
-double PerceptronMulticapa::calcularErrorSalida(double* target) {
+double PerceptronMulticapa::calcularErrorSalida(double* target, int funcionError) {
 	double error=0;
 	int i;
 
@@ -192,7 +232,7 @@ double PerceptronMulticapa::calcularErrorSalida(double* target) {
 
 // ------------------------------
 // Retropropagar el error de salida con respecto a un vector pasado como argumento, desde la última capa hasta la primera
-void PerceptronMulticapa::retropropagarError(double* objetivo) {
+void PerceptronMulticapa::retropropagarError(double* objetivo, int funcionError) {
 	int i, j, k;
 	double derivada;
 
@@ -298,7 +338,7 @@ void PerceptronMulticapa::simularRed(double* entrada, double* objetivo, int func
 
 	propagarEntradas();
 
-	retropropagarError(objetivo);
+	retropropagarError(objetivo, funcionError);
 
 	acumularCambio();
 
@@ -421,7 +461,7 @@ double PerceptronMulticapa::test(Datos* pDatosTest, int funcionError) {
 	for(i=0;i<pDatosTest->nNumPatrones;i++) {
 		alimentarEntradas(pDatosTest->entradas[i]);
 		propagarEntradas();
-		mse += calcularErrorSalida(pDatosTest->salidas[i]);
+		mse += calcularErrorSalida(pDatosTest->salidas[i], funcionError);
 	}
 	mse /= pDatosTest->nNumPatrones;
 	return mse;

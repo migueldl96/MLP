@@ -144,6 +144,7 @@ int main(int argc, char **argv) {
 	mlp.dValidacion = validation;
 	mlp.dDecremento = decremento;
     mlp.bOnline = trainMode;
+    mlp.softmaxOut = softmaxOut;
 
 
 	// Lectura de datos

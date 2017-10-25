@@ -62,10 +62,10 @@ private:
 	void propagarEntradas();
 
 	// Calcular el error de salida (MSE) del out de la capa de salida con respecto a un vector objetivo y devolverlo
-	double calcularErrorSalida(double* objetivo);
+	double calcularErrorSalida(double* objetivo, int funcionError);
 
 	// Retropropagar el error de salida con respecto a un vector pasado como argumento, desde la última capa hasta la primera
-	void retropropagarError(double* objetivo);
+	void retropropagarError(double* objetivo, int funcionError);
 
 	// Acumular los cambios producidos por un patrón en deltaW
 	void acumularCambio();
@@ -105,6 +105,7 @@ public:
 	                    // se usan para valición; si dValidacion=0, no hay validación)
 	double dDecremento; // Factor de decremento por capas para eta
 	bool bOnline;		// Aprendizaje online u offline
+	bool softmaxOut;	// Salida sigmoide
 
 	// CONSTRUCTOR: Dar valor por defecto a todos los parámetros
 	PerceptronMulticapa();
