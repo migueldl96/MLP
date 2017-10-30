@@ -15,6 +15,8 @@
 #include <limits>
 #include <math.h>
 
+#define ENTRIOPIA_CRUZADA 1
+#define MSE 0
 
 using namespace imc;
 using namespace std;
@@ -157,8 +159,6 @@ void PerceptronMulticapa::propagarEntradas() {
 	int i, j, k;
 	double net = 0.0;
 
-	// Sumatorio de salidas
-
 	// Propagamos hasta la última capa
 	for(i=1; i<nNumCapas-1; i++) {
 		// Bucle para cada neurona de la capa actual
@@ -175,42 +175,37 @@ void PerceptronMulticapa::propagarEntradas() {
 	}
 
 	// Última capa, sigmoide o softmax?
-	if(softmaxOut) {	// Softmax
-		double netOuts[pCapas[nNumCapas-1].nNumNeuronas];
-		double netsSum = 0.0;
+	double netOuts[pCapas[nNumCapas-1].nNumNeuronas];
+	double netsSum = 0.0;
 
-		// Calculamos net de cada neurona de salida y el sumatorio total
-		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
-			net = 0;
+	// Net de cada neurona de saldia
+	for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
+		net = 0;
 
-			for(j=0;j<pCapas[nNumCapas-2].nNumNeuronas;j++) {
-				net += pCapas[nNumCapas-2].pNeuronas[j].x * pCapas[nNumCapas-1].pNeuronas[i].w[j+1];
-			}
+		for(j=0;j<pCapas[nNumCapas-2].nNumNeuronas;j++)
+			net += pCapas[nNumCapas-2].pNeuronas[j].x * pCapas[nNumCapas-1].pNeuronas[i].w[j+1];
+		
+		net += pCapas[nNumCapas-1].pNeuronas[i].w[0];
 
-			net += pCapas[nNumCapas-1].pNeuronas[i].w[0];
+
+		// Softmax
+		if(softmaxOut) {
 			netOuts[i] = exp(net);
 			netsSum += exp(net);
 		}
-
-		// Aplicamos softmax
-		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
-			pCapas[nNumCapas-1].pNeuronas[i].x = netOuts[i]/netsSum;
-		}
-
-	}
-	else {				// Sigmoide
-		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
-			net = 0;
-
-			for(j=0;j<pCapas[nNumCapas-2].nNumNeuronas;j++) {
-				net += pCapas[nNumCapas-2].pNeuronas[j].x * pCapas[nNumCapas-1].pNeuronas[i].w[j+1];
-			}
-
-			net += pCapas[nNumCapas-1].pNeuronas[i].w[0];
-
+		//Sigmoide
+		else {
 			pCapas[nNumCapas-1].pNeuronas[i].x = 1/(1+exp(-net));
 		}
+
 	}
+
+	// Aplicamos softmax
+	if(softmaxOut) {
+		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++)
+			pCapas[nNumCapas-1].pNeuronas[i].x = netOuts[i]/netsSum;
+	}
+
 
 
 }
@@ -221,26 +216,82 @@ double PerceptronMulticapa::calcularErrorSalida(double* target, int funcionError
 	double error=0;
 	int i;
 
-	for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++)
-		error += pow((target[i]-pCapas[nNumCapas-1].pNeuronas[i].x), 2);
-	
-	error /= pCapas[nNumCapas-1].nNumNeuronas;
+	switch(funcionError) {
 
+	case MSE:
+		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++)
+			error += pow((target[i]-pCapas[nNumCapas-1].pNeuronas[i].x), 2);
+		
+		error /= pCapas[nNumCapas-1].nNumNeuronas;
+	break;
+
+	case ENTRIOPIA_CRUZADA:
+		for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
+			error += (-1 * target[i] * log(pCapas[nNumCapas-1].pNeuronas[i].x));
+		}
+
+		error /= pCapas[nNumCapas-1].nNumNeuronas;
+	break;
+
+	}	
 	return error;
 }
 
 
 // ------------------------------
 // Retropropagar el error de salida con respecto a un vector pasado como argumento, desde la última capa hasta la primera
+// funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
 void PerceptronMulticapa::retropropagarError(double* objetivo, int funcionError) {
 	int i, j, k;
 	double derivada;
-
+	double outi, outj;
 	// Capa de salida
 	for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
-		derivada = -1 * (objetivo[i] - pCapas[nNumCapas-1].pNeuronas[i].x) * (pCapas[nNumCapas-1].pNeuronas[i].x) * (1 - pCapas[nNumCapas-1].pNeuronas[i].x);
-		pCapas[nNumCapas-1].pNeuronas[i].dX = derivada;
+		outi = pCapas[nNumCapas-1].pNeuronas[i].x;
+
+		// Sigmoide
+		if(!softmaxOut) {
+			switch(funcionError) {
+				case MSE:
+					derivada = (objetivo[i] - outi) * (outi) * (1 - outi);
+				break;
+
+				case ENTRIOPIA_CRUZADA:
+					derivada = (objetivo[i] / outi) * (outi) * (1 - outi);
+				break;
+
+			}
+		}
+
+		// Softmax
+		else {
+			switch(funcionError) {
+				case MSE:
+					derivada = 0;
+					for(j=0;j<pCapas[nNumCapas-1].nNumNeuronas;j++) {
+						outj = pCapas[nNumCapas-1].pNeuronas[j].x;
+						derivada += ((objetivo[j] - outj) * (outi) * ((j == i) ? (1 - outj) : (-outj)));
+					}
+				break;
+
+				case ENTRIOPIA_CRUZADA:
+					derivada = 0;
+					for(j=0;j<pCapas[nNumCapas-1].nNumNeuronas;j++) {
+						outj = pCapas[nNumCapas-1].pNeuronas[j].x;
+						if(i==j)
+							derivada += ((objetivo[j] / outj) * (outi) * (1 - outj));
+						else
+							derivada += ((objetivo[j] / outj) * (outi) * (0 - outj));
+
+					}
+				break;
+			}
+		}
+
+		// Asignamos la derivada
+		pCapas[nNumCapas-1].pNeuronas[i].dX = -derivada;
 	}
+
 	
 	// Resto de capas
 	for(i=nNumCapas-2; i>=0; i--) {

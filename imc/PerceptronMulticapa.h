@@ -65,6 +65,7 @@ private:
 	double calcularErrorSalida(double* objetivo, int funcionError);
 
 	// Retropropagar el error de salida con respecto a un vector pasado como argumento, desde la última capa hasta la primera
+	// funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
 	void retropropagarError(double* objetivo, int funcionError);
 
 	// Acumular los cambios producidos por un patrón en deltaW
