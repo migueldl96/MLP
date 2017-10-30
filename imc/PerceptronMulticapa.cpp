@@ -18,6 +18,7 @@
 #define ENTRIOPIA_CRUZADA 1
 #define MSE 0
 
+
 using namespace imc;
 using namespace std;
 using namespace util;
