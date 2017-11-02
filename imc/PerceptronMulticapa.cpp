@@ -318,7 +318,7 @@ void PerceptronMulticapa::acumularCambio() {
 			pCapas[i].pNeuronas[j].deltaW[0] += pCapas[i].pNeuronas[j].dX;
 
 			// Resto
-			for(k=0; k<pCapas[i-1].nNumNeuronas;k++) 
+			for(k=0; k<pCapas[i-1].nNumNeuronas;k++)
 				pCapas[i].pNeuronas[j].deltaW[k+1] += pCapas[i].pNeuronas[j].dX * pCapas[i-1].pNeuronas[k].x;
 			
 		}
@@ -336,10 +336,11 @@ void PerceptronMulticapa::ajustarPesos() {
 			for(k=0; k<pCapas[i-1].nNumNeuronas+1;k++) {
 				deltaW = pCapas[i].pNeuronas[j].deltaW[k];
 				deltaWAnterior = pCapas[i].pNeuronas[j].ultimoDeltaW[k];
-				if(bOnline)
-					pCapas[i].pNeuronas[j].w[k] = pCapas[i].pNeuronas[j].w[k] - (eta * deltaW) - dMu * (eta * deltaWAnterior);
+				if(bOnline) 
+					pCapas[i].pNeuronas[j].w[k] += ((-eta * deltaW) - dMu * (eta * deltaWAnterior));
+				
 				else
-					pCapas[i].pNeuronas[j].w[k] = pCapas[i].pNeuronas[j].w[k] - (eta * deltaW)/nNumPatronesTrain - (dMu * eta * deltaWAnterior)/nNumPatronesTrain;
+					pCapas[i].pNeuronas[j].w[k] += ((-eta * deltaW)/nNumPatronesTrain - (dMu * eta * deltaWAnterior)/nNumPatronesTrain);
 			}
 		}
 	}
@@ -408,7 +409,6 @@ void PerceptronMulticapa::entrenar(Datos* pDatosTrain, int funcionError) {
 	for(i=0;i<pDatosTrain->nNumPatrones;i++) {
 		simularRed(pDatosTrain->entradas[i], pDatosTrain->salidas[i], funcionError);
 	}
-
 	if(!bOnline) ajustarPesos();
 }
 
