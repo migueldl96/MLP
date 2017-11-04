@@ -21,8 +21,8 @@
 
 #define ENTRIOPIA_CRUZADA 1
 #define MSE 0
-#define OFFLINE true
-#define ONLINE false
+#define OFFLINE false
+#define ONLINE true
 
 
 using namespace imc;
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	// Procesar los argumentos de la línea de comandos
 	opterr=0;
 	char c;
-    while ((c = getopt (argc, argv, "t:T:i:l:h:e:m:v:d:ofs")) != -1)
+    while ((c = getopt (argc, argv, "t:T:i:l:h:e:m:v:d:of:s")) != -1)
     {
         switch (c)
         {
@@ -113,8 +113,14 @@ int main(int argc, char **argv) {
             trainMode = ONLINE;
         break;
 
-        case 'f': // Funcion de error = Entriopía cruzada
-            funcionError = ENTRIOPIA_CRUZADA;
+        case 'f': // Funcion de error
+       // int opcion = atoi(optarg);
+            if(atoi(optarg) == 0)
+                funcionError = MSE;
+            else if(atoi(optarg) == 1)
+                funcionError = ENTRIOPIA_CRUZADA;
+            else
+                printf("WARNING: Valor de función de error no permitido. Utilizando MSE...\n");
         break;
 
         case 's': // Softmax

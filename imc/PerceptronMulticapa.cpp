@@ -338,7 +338,6 @@ void PerceptronMulticapa::ajustarPesos() {
 				deltaWAnterior = pCapas[i].pNeuronas[j].ultimoDeltaW[k];
 				if(bOnline) 
 					pCapas[i].pNeuronas[j].w[k] += ((-eta * deltaW) - dMu * (eta * deltaWAnterior));
-				
 				else
 					pCapas[i].pNeuronas[j].w[k] += ((-eta * deltaW)/nNumPatronesTrain - (dMu * eta * deltaWAnterior)/nNumPatronesTrain);
 			}
