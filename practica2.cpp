@@ -114,7 +114,6 @@ int main(int argc, char **argv) {
         break;
 
         case 'f': // Funcion de error
-       // int opcion = atoi(optarg);
             if(atoi(optarg) == 0)
                 funcionError = MSE;
             else if(atoi(optarg) == 1)

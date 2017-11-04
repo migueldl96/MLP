@@ -36,7 +36,7 @@ PerceptronMulticapa::PerceptronMulticapa(){
 // ------------------------------
 // Reservar memoria para las estructuras de datos
 int PerceptronMulticapa::inicializar(int nl, int npl[]) {
-	int i, j;
+	int i, j, k;
 	nNumCapas = nl;
 	pCapas = new Capa[nl];
 	// Recorremos cada capa
@@ -45,13 +45,19 @@ int PerceptronMulticapa::inicializar(int nl, int npl[]) {
 		pCapas[i].pNeuronas    = new Neurona[npl[i]];
 
 		// Recorremos cada neurona para crear el vector de pesos (si no es la primera capa...)
-		if (i>0)
+		if (i>0) {
 			for(j = 0; j < npl[i] ; j++){
 				pCapas[i].pNeuronas[j].w = new double[pCapas[i-1].nNumNeuronas + 1]; // + 1 => Sesgo
 				pCapas[i].pNeuronas[j].wCopia = new double[pCapas[i-1].nNumNeuronas + 1]; // + 1 => Sesgo
 				pCapas[i].pNeuronas[j].deltaW = new double[pCapas[i-1].nNumNeuronas + 1];
 				pCapas[i].pNeuronas[j].ultimoDeltaW = new double[pCapas[i-1].nNumNeuronas + 1];
+				for(k=0;k<pCapas[i-1].nNumNeuronas + 1;k++) {
+					pCapas[i].pNeuronas[j].deltaW[k] = 0;
+					pCapas[i].pNeuronas[j].ultimoDeltaW[k] = 0;
+				}
 			}
+
+		}
 
 	}
 	
@@ -340,6 +346,7 @@ void PerceptronMulticapa::ajustarPesos() {
 					pCapas[i].pNeuronas[j].w[k] += ((-eta * deltaW) - dMu * (eta * deltaWAnterior));
 				else
 					pCapas[i].pNeuronas[j].w[k] += ((-eta * deltaW)/nNumPatronesTrain - (dMu * eta * deltaWAnterior)/nNumPatronesTrain);
+
 			}
 		}
 	}
@@ -567,7 +574,6 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 	// Inicialización de pesos
 	pesosAleatorios();
 
-
 	double minTrainError = 0;
 	int numSinMejorarTrain, numSinMejorarVal;
 	double testError = 0;
@@ -611,6 +617,7 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 	do {
 
 		entrenar(pDatosTrain, funcionError);
+
 		double trainError = test(pDatosTrain, funcionError);
 		if(usingValidation) valError = test(pDatosValidacion, funcionError);
 
