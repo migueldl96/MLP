@@ -77,7 +77,7 @@ PerceptronMulticapa::~PerceptronMulticapa() {
 // Liberar memoria para las estructuras de datos
 void PerceptronMulticapa::liberarMemoria() {
 	int i, j;
-	for(i=0;i<nNumCapas;i++) {
+	for(i=1;i<nNumCapas;i++) {
 		for(j=0;j<pCapas[i].nNumNeuronas;j++) {
 			free(pCapas[i].pNeuronas[j].w);
 			free(pCapas[i].pNeuronas[j].wCopia);
