@@ -1,8 +1,8 @@
-practica1: practica1.o imc/PerceptronMulticapa.o imc/stats.o imc/util.h
-	g++ practica1.o imc/PerceptronMulticapa.o imc/stats.o -o practica1 -O3 -g
+practica2: practica2.o imc/PerceptronMulticapa.o imc/stats.o imc/util.h
+	g++ practica2.o imc/PerceptronMulticapa.o imc/stats.o -o practica2 -O3 -g
 
-practica1.o: practica1.cpp
-	g++ -c practica1.cpp
+practica2.o: practica2.cpp
+	g++ -c practica2.cpp
 
 imc/PerceptronMulticapa.o: imc/PerceptronMulticapa.cpp imc/PerceptronMulticapa.h
 	g++ -c imc/PerceptronMulticapa.cpp -o imc/PerceptronMulticapa.o

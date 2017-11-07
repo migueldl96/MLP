@@ -185,7 +185,7 @@ void PerceptronMulticapa::propagarEntradas() {
 	double netOuts[pCapas[nNumCapas-1].nNumNeuronas];
 	double netsSum = 0.0;
 
-	// Net de cada neurona de saldia
+	// Net de cada neurona de salidpa
 	for(i=0;i<pCapas[nNumCapas-1].nNumNeuronas;i++) {
 		net = 0;
 
@@ -285,10 +285,7 @@ void PerceptronMulticapa::retropropagarError(double* objetivo, int funcionError)
 					derivada = 0;
 					for(j=0;j<pCapas[nNumCapas-1].nNumNeuronas;j++) {
 						outj = pCapas[nNumCapas-1].pNeuronas[j].x;
-						if(i==j)
-							derivada += ((objetivo[j] / outj) * (outi) * (1 - outj));
-						else
-							derivada += ((objetivo[j] / outj) * (outi) * (0 - outj));
+						derivada += ((objetivo[j] / outj) * (outi) * ((j == i) ? (1 - outj) : (-outj)));
 
 					}
 				break;
@@ -598,7 +595,7 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 		pDatosValidacion -> nNumPatrones = (pDatosTrain->nNumPatrones) * dValidacion;
 		pDatosValidacion -> nNumEntradas = pDatosTrain -> nNumEntradas;
 		pDatosValidacion -> nNumSalidas = pDatosTrain -> nNumSalidas;
-		int * patronesElegidos = vectorAleatoriosEnterosSinRepeticion(0, pDatosTrain->nNumPatrones, pDatosValidacion->nNumPatrones);
+		int * patronesElegidos = vectorAleatoriosEnterosSinRepeticion(0, pDatosTrain->nNumPatrones - 1, pDatosValidacion->nNumPatrones);
 
 		// Reservamos matriz de entradas y salidas para validacion
 		pDatosValidacion->entradas = (double **)malloc((pDatosValidacion -> nNumPatrones) * sizeof(double *));
