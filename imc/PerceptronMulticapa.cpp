@@ -523,7 +523,7 @@ double PerceptronMulticapa::test(Datos* pDatosTest, int funcionError) {
 }
 
 // Probar la red con un conjunto de datos y devolver el CCR
-double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
+double PerceptronMulticapa::testClassification(Datos* pDatosTest, int ** confusionMatrix) {
 	double ccr = 0.0;
 	int i, j;
 	double maxYDeseado, maxYObtenido;
@@ -552,6 +552,7 @@ double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 		}
 		if(posDeseado == posObtenido)
 			ccr++;
+		if(confusionMatrix != NULL) confusionMatrix[posObtenido][posDeseado]++;
 		
 	}
 
@@ -570,6 +571,17 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 
 	// Inicialización de pesos
 	pesosAleatorios();
+
+	// Matriz de confusión
+	int ** confusionMatrix = NULL;
+
+	/*confusionMatrix = (int **)malloc(6 * sizeof(int *));
+	for(int i = 0; i < 6 ; i++) {
+		confusionMatrix[i] = (int *)malloc(6 * sizeof(int));
+		for(int j = 0; j < 6; j++) {
+			confusionMatrix[i][j] = 0;
+		}
+	}*/
 
 	double minTrainError = 0;
 	int numSinMejorarTrain, numSinMejorarVal;
@@ -649,12 +661,14 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 			}
 		}
 
+		testError = test(pDatosTest, funcionError);
 		// Controlamos el número de iteraciones
 		(countTrain < maxiter && keepIterating) ? (countTrain++) : (keepIterating = false);
 
 		// Comprobar condiciones de parada de validación y forzar
-		cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError;
+		cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError << "\t Error de test: " << testError;
 		if(usingValidation) cout << "\t Error de validación: " << valError;
+		cout << "\tCCR de entrenamiento: " << testClassification(pDatosTrain) << "\tCCR de test: " << testClassification(pDatosTest);
 		cout << endl;
 
 	} while (keepIterating);
@@ -682,12 +696,20 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(const Datos * originalPDatosTr
 
 	}
 
-	testError = test(pDatosTest, funcionError);
 	*errorTest=testError;
 	*errorTrain=minTrainError;
-	*ccrTest = testClassification(pDatosTest);
+	*ccrTest = testClassification(pDatosTest, confusionMatrix);
 	*ccrTrain = testClassification(pDatosTrain);
 
 	if(usingValidation) delete pDatosValidacion;
+
+	/*
+	for(int i = 0; i < 6 ; i++) {
+		for(int j = 0; j < 6; j++) {
+			cout << confusionMatrix[i][j] << " ";
+		}
+		cout << endl;
+	}
+	*/
 
 }

@@ -6,7 +6,7 @@
 
 #ifndef _PERCEPTRONMULTICAPA_H_
 #define _PERCEPTRONMULTICAPA_H_
-
+#include <stddef.h>
 
 namespace imc{
 
@@ -125,8 +125,8 @@ public:
 	// Probar la red con un conjunto de datos y devolver el error MSE (media de diferencia al cuadrado) cometido
 	double test(Datos* pDatosTest, int funcionError);
 
-	// Probar la red con un conjunto de datos y devolver el CCR
-	double testClassification(Datos* pDatosTest);
+	// Probar la red con un conjunto de datos y devolver el CCR. Calcular matriz de confusión
+	double testClassification(Datos* pDatosTest, int ** confusionMatrix = NULL);
 
 	// Ejecutar el algoritmo de entrenamiento durante un número de iteraciones, utilizando pDatosTrain
      // Una vez terminado, probar como funciona la red en pDatosTest
